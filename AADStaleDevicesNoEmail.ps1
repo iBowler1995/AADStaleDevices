@@ -51,9 +51,11 @@ $Date = ("{0:s}" -f (Get-Date)).Split("T")[0]
 $Days = [datetime](get-date).AddDays(- $Threshold)
 #This should be the account with appropriate permission to execute this script
 $UPN = ""
-$SPWD = Get-Content ".\SCred.txt" | ConvertTo-SecureString      
-$ScriptCredential = New-Object -TypeName System.Management.Automation.PSCredential($UPN, $SPWD)
-
+If ($SPWDExists)
+{
+	$SPWD = Get-Content ".\SCred.txt" | ConvertTo-SecureString
+	$ScriptCredential = New-Object -TypeName System.Management.Automation.PSCredential($UPN, $SPWD)
+}
 #Connects to AzureAD, with saved creds if the flag is called
 If ($UseCreds)
 {
