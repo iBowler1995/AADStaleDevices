@@ -34,6 +34,17 @@ AADStaleDevices.ps1
 [-RemoveDevices] Deletes ONLY disabled devices that are older than specified Threshold and exports report in .\Exports\ and emails report
 [-UseCreds] Uses saved credentials if you completed the HOW TO UPDATE steps; else prompts for credentials to execute script
 
+USE AS A SCHEDULED TASK:
+
+***Note: You'll want to create a task for disabling and a second task for deleting. You must use -UseCreds flag for these tasks.***
+
+1. Open Task Scheduler
+2. Click "New task" on the right-hand side
+3. Name the task, under securtiy options check "run whether logged in or not" and "run under highest privileges" and set OS as Windows 10
+4. On Triggers tab, add the schedule you want to run this script. Ex., Every second Monday of the month at noon to disable devices
+5. On Actions tab type Powershell for the program to launch, under arguments type:
+   -> ExecutionPolicy Bypass -Command "<Path to script>AADStaleDevices.ps1 -Threshold <your threshold> -DisableDevices -UseCreds" <-   
+   
 Examples:
 -> AADStaleDevices.ps1 -Threshold 120 -Verify <- This would generate a report of all devices older than 120 days and require you to enter a login
 
