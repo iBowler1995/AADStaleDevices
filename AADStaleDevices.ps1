@@ -3,6 +3,7 @@
 	===========================================================================
 	 Script Name: AADStaleDevices
 	 Created on:   	11/4/2021
+	 Created by: iBowler1995
 	 Filename: AADStaleDevices.ps1
 	===========================================================================
 	.DESCRIPTION
