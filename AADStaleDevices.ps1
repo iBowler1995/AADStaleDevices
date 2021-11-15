@@ -1,9 +1,9 @@
-﻿<#	
+<#	
 	NOTES
 	===========================================================================
 	 Script Name: AADStaleDevices
 	 Created on:   	11/4/2021
-	 Created by: iBowler1995
+	 Created by:   	Levi Masse
 	 Filename: AADStaleDevices.ps1
 	===========================================================================
 	.DESCRIPTION
@@ -51,15 +51,15 @@ $Date = ("{0:s}" -f (Get-Date)).Split("T")[0]
 $Days = [datetime](get-date).AddDays(- $Threshold)
 $SubjectDate = Get-Date -Format "MM-dd-yyyy"
 #This should be the account with appropriate permission to execute this script
-$UPN = ""
+$UPN = "lmasse_sa238tg@verisma.com"
 $SPWDExists = (Test-Path -Path .\SCred.txt -PathType Leaf)
 If ($SPWDExists)
 {
 	$SPWD = Get-Content ".\SCred.txt" | ConvertTo-SecureString
 	$ScriptCredential = New-Object -TypeName System.Management.Automation.PSCredential($UPN, $SPWD)
 }
-$From = ""
-$To = ""
+$From = "lmasse@verisma.com"
+$To = "Infrastructure.Cloud@verisma.com"
 $SMTPServer = "smtp.office365.com"
 $SMTPPort = "587"
 $EPWD = Get-Content ".\ECred.txt" | ConvertTo-SecureString
@@ -79,7 +79,7 @@ If ($Verify)
 {
 	$vPath = ".\Exports\Stale Azure Devices_" + $Date + ".xlsx"
 	$vSubject = "AAD Stale Device Verification: " + $SubjectDate + " Older than " + $Threshold + " Days"
-	$GetStaleDevices = Get-AzureADDevice -All:$true | Where { $_.ApproximateLastLogonTimeStamp -le $Days } | select-object -Property AccountEnabled, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
+	$GetStaleDevices = Get-AzureADDevice -All:$true | Where { $_.ApproximateLastLogonTimeStamp -le $Days } | select-object -Property AccountEnabled, ObjectId, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
 	$GetStaleDevices | Export-Excel -workSheetName "Stale Devices" -path $vPath -ClearSheet -TableName "Stale AAD Devices" -AutoSize
 	Send-MailMessage -From $From -To $To -Subject $vSubject -SmtpServer $SMTPServer -Port $SMTPPort -Credential $ECred -Attachments $vPath -UseSsl 
 }
@@ -87,7 +87,7 @@ elseif ($VerifyDisabled)
 {
 	$vdPath = ".\Exports\Stale Disabled Azure Devices_" + $Date + ".xlsx"
 	$vdSubject = "AAD Stale, Disabled Device Verification: " + $SubjectDate + " Older than " + $Threshold + " Days"
-	$GetDisabledStaleDevices = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) -and ($_.AccountEnabled -eq $false) } | select-object -Property AccountEnabled, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
+	$GetDisabledStaleDevices = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) -and ($_.AccountEnabled -eq $false) } | select-object -Property AccountEnabled, ObjectId, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
 	$GetDisabledStaleDevices | Export-Excel -workSheetName "Stale Disabled Devices" -path $vdPath -ClearSheet -TableName "Stale Disabled AAD Devices" -AutoSize
 	Send-MailMessage -From $From -To $To -Subject $vdSubject -SmtpServer $SMTPServer -Port $SMTPPort -Credential $ECred -Attachments $vdPath -UseSsl
 }
@@ -95,12 +95,12 @@ elseif ($DisableDevices)
 {
 	$ddPath = ".\Exports\Azure Devices Disabled_" + $Date + ".xlsx"
 	$ddSubject = "AAD Stale Devices Disabled: " + $SubjectDate + " Older than " + $Threshold + " Days"
-	$DisableAADDevice = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) } | select-object -Property AccountEnabled, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
+	$DisableAADDevice = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) } | select-object -Property AccountEnabled, ObjectId, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
 	$DisableAADDevice | Export-Excel -workSheetName "Devices Disabled" -path $ddPath -ClearSheet -TableName "AAD Devices Disabled" -AutoSize
 	
 	foreach ($StaleDevice in $DisableAADDevice)
 	{
-		Set-AzureADDevice -AccountEnabled $false
+		Set-AzureADDevice -ObjectId $StaleDevice.ObjectID -AccountEnabled $false
 	}
 	Send-MailMessage -From $From -To $To -Subject $ddSubject -SmtpServer $SMTPServer -Port $SMTPPort -Credential $ECred -Attachments $ddPath -UseSsl
 }
@@ -108,7 +108,7 @@ elseif ($RemoveDevices)
 {
 	$rdPath = ".\Exports\Azure Devices Removed_" + $Date + ".xlsx"
 	$rdSubject = "AAD Stale Devices Removed: " + $SubjectDate + " Older than " + $Threshold + " Days"
-	$RemoveAADDeviceList = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) -and ($_.AccountEnabled -eq $false) } | select-object -Property AccountEnabled, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
+	$RemoveAADDeviceList = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) -and ($_.AccountEnabled -eq $false) } | select-object -Property AccountEnabled, ObjectId, DeviceId, DeviceOSVersion, DisplayName, ApproximateLastLogonTimestamp
 	$RemoveAADDeviceList | Export-Excel -workSheetName "Stale Devices Removed" -Path $rdPath -ClearSheet -TableName "AAD Devices Removed" -AutoSize
 	$RemoveAADDevice = Get-AzureADDevice -All:$true | where { ($_.ApproximateLastLogonTimeStamp -le $Days) -and ($_.AccountEnabled -eq $false) } | select-object -ExpandProperty ObjectID
 	
