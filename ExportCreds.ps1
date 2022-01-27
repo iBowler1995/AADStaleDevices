@@ -1,2 +1,0 @@
-﻿Read-Host -Prompt "Enter Script Password" -AsSecureString | ConvertFrom-SecureString | Out-File ".\Scred.txt"
-Read-Host -Prompt "Enter Email Password" -AsSecureString | ConvertFrom-SecureString | Out-File ".\ECred.txt"
