@@ -2,11 +2,11 @@
 	NOTES
 	===========================================================================
 	 Script Name: 	AADStaleDevices
-	 Version:		1.2
+	 Version:	1.2
 	 Created on:   	11/4/2021
 	 Updated on: 	1/27/2022
 	 Created by:   	iBowler1995
-	 Filename: 		AADStaleDevices.ps1
+	 Filename: 	AADStaleDevices.ps1
 	===========================================================================
 	.DESCRIPTION
 	This script is designed to manage stale AzureAD Devices.
